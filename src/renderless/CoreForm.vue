@@ -21,6 +21,10 @@ export default {
             type: String,
             default: 'en',
         },
+        template: {
+            type: Object,
+            default: null,
+        },
         params: {
             type: Object,
             default: null,
@@ -41,9 +45,7 @@ export default {
 
     computed: {
         formData() {
-            return this.state.data.sections
-                .reduce((fields, section) => fields
-                    .concat(section.fields), [])
+            return this.flatten
                 .reduce((object, field) => {
                     object[field.name] = field.value;
                     return object;
@@ -89,10 +91,20 @@ export default {
     },
 
     created() {
-        this.fetch();
+        this.init();
     },
 
     methods: {
+        init() {
+            if (this.template) {
+                this.state.data = this.template;
+                this.$emit('ready');
+
+                return;
+            }
+
+            this.fetch();
+        },
         fetch() {
             this.state.loading = true;
 
@@ -131,7 +143,11 @@ export default {
             axios[this.state.data.method](this.submitPath, this.formData)
                 .then(({ data }) => {
                     this.state.loading = false;
-                    this.$toastr.success(data.message);
+
+                    if (data.message) {
+                        this.$toastr.success(data.message);
+                    }
+
                     this.$emit('submit', data);
 
                     if (data.redirect) {
@@ -160,7 +176,11 @@ export default {
             axios.delete(this.state.data.actions.destroy.path)
                 .then(({ data }) => {
                     this.state.loading = false;
-                    this.$toastr.success(data.message);
+
+                    if (data.message) {
+                        this.$toastr.success(data.message);
+                    }
+
                     this.$emit('destroy');
 
                     if (data.redirect) {

@@ -1,6 +1,7 @@
 <template>
     <div class="field">
-        <label class="label">
+        <label class="label"
+            v-if="state.data.labels">
             {{ i18n(field.label) }}
             <span class="icon is-small has-text-info"
                 v-tooltip="i18n(field.meta.tooltip)"
@@ -14,6 +15,7 @@
             :i18n="i18n"
             :locale="locale"
             v-bind="$attrs"
+            @changed="autosave"
             v-on="$listeners"/>
         <p class="help is-danger"
             v-if="errors.has(field.name)">
@@ -23,6 +25,7 @@
 </template>
 
 <script>
+import debounce from 'lodash/debounce';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faInfoCircle } from '@fortawesome/free-solid-svg-icons';
 import { VTooltip } from 'v-tooltip';
@@ -53,12 +56,28 @@ export default {
         WysiwygField,
     },
 
-    inject: ['fieldType', 'errors', 'i18n', 'locale', 'state'],
+    inject: ['fieldType', 'errors', 'i18n', 'locale', 'state', 'submit'],
 
     props: {
         field: {
             type: Object,
             required: true,
+        },
+    },
+
+    created() {
+        this.autosave = debounce(this.autosave, this.state.data.debounce);
+
+        if (!this.state.data.labels && !this.field.meta.placeholder) {
+            this.field.meta.placeholder = this.field.label;
+        }
+    },
+
+    methods: {
+        autosave() {
+            if (this.state.data.autosave) {
+                this.submit();
+            }
         },
     },
 };

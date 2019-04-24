@@ -48,13 +48,13 @@
             <span class="is-hidden"/>
         </a>
         <slot name="actions"/>
-        <a :class="[
+        <button :class="[
                 'button is-pulled-right',
                 actions.store.button.class, { 'is-loading': state.loading }
             ]"
             :disabled="actions.store.forbidden || errors.any()"
             @click="submit"
-            v-if="actions.store">
+            v-if="actions.store && !state.data.autosave">
             <span class="is-hidden-mobile">
                 {{ i18n(actions.store.button.label) }}
             </span>
@@ -62,14 +62,14 @@
                 <fa :icon="actions.store.button.icon"/>
             </span>
             <span class="is-hidden"/>
-        </a>
-        <a :class="[
+        </button>
+        <button :class="[
                 'button is-pulled-right',
                 actions.update.button.class, { 'is-loading': state.loading }
             ]"
             :disabled="actions.update.forbidden || errors.any()"
             @click="submit"
-            v-if="actions.update">
+            v-if="actions.update && !state.data.autosave">
             <span class="is-hidden-mobile">
                 {{ i18n(actions.update.button.label) }}
             </span>
@@ -77,7 +77,7 @@
                 <fa :icon="actions.update.button.icon"/>
             </span>
             <span class="is-hidden"/>
-        </a>
+        </button>
         <div class="is-clearfix"/>
         <confirmation :show="confirmation"
             :message="actions.destroy.button.message"
