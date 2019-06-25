@@ -6,16 +6,12 @@
                 :title="i18n(section.title)"
                 :placement="state.data.dividerTitlePlacement"/>
         </div>
-        <slot :name="section.slot"
-            :section="section"
-            v-if="section.columns === 'slot'"/>
         <div v-for="field in sectionFields(section)"
             class="column"
             :class="section.columns !== 'custom'
                 ? columnSize(section.columns)
                 : `is-${field.column}`"
-            :key="field.name"
-            v-else>
+            :key="field.name">
             <slot :name="field.name"
                 v-if="field.meta.custom"/>
             <form-field :field="field"

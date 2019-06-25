@@ -53,10 +53,20 @@ export default {
                 ? this.$refs.coreForm.state.data
                 : [];
         },
+        formData() {
+            return this.ready
+                ? this.$refs.coreForm.formData
+                : [];
+        },
+        dirty() {
+            return this.ready
+                ? this.$refs.coreForm.dirty()
+                : false;
+        },
         errors() {
             return this.ready
                 ? this.$refs.coreForm.errors
-                : [];
+                : null;
         },
     },
 
@@ -64,6 +74,10 @@ export default {
         fetch() {
             return this.ready
                 && this.$refs.coreForm.fetch();
+        },
+        submit() {
+            return this.ready
+                && this.$refs.coreForm.submit();
         },
         field(field) {
             return this.ready
@@ -76,6 +90,16 @@ export default {
         routeParam(param) {
             return this.ready
                 && this.$refs.coreForm.routeParam(param);
+        },
+        fill(state) {
+            return this.ready
+                ? this.$refs.coreForm.fill(state)
+                : null;
+        },
+        setOriginal() {
+            return this.ready
+                ? this.$refs.coreForm.setOriginal()
+                : null;
         },
     },
 };

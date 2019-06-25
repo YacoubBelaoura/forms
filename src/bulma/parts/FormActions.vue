@@ -1,84 +1,62 @@
 <template>
-    <div class="actions">
-        <a :class="['button', actions.back.button.class]"
-            @click="$router.go(-1)"
-            v-if="actions.back">
-            <span class="is-hidden-mobile">
-                {{ i18n('Back') }}
-            </span>
-            <span class="icon">
-                <fa :icon="actions.back.button.icon"/>
-            </span>
-            <span class="is-hidden"/>
-        </a>
-        <a :class="['button', actions.destroy.button.class]"
-            :disabled="actions.destroy.forbidden"
-            @click="confirmation = !actions.destroy.forbidden"
-            v-if="actions.destroy">
-            <span class="is-hidden-mobile">
-                {{ i18n(actions.destroy.button.label) }}
-            </span>
-            <span class="icon">
-                <fa :icon="actions.destroy.button.icon"/>
-            </span>
-            <span class="is-hidden"/>
-        </a>
-        <a :class="['button', actions.show.button.class]"
-            :disabled="actions.show.forbidden"
-            @click="!actions.show.forbidden ? show() : null"
-            v-if="actions.show">
-            <span class="is-hidden-mobile">
-                {{ i18n(actions.show.button.label) }}
-            </span>
-            <span class="icon">
-                <fa :icon="actions.show.button.icon"/>
-            </span>
-            <span class="is-hidden"/>
-        </a>
-        <a :class="['button', actions.create.button.class]"
-            :disabled="actions.create.forbidden"
-            @click="!actions.create.forbidden ? create() : null"
-            v-if="actions.create">
-            <span class="is-hidden-mobile">
-                {{ i18n(actions.create.button.label) }}
-            </span>
-            <span class="icon">
-                <fa :icon="actions.create.button.icon"/>
-            </span>
-            <span class="is-hidden"/>
-        </a>
-        <slot name="actions"/>
-        <button :class="[
-                'button is-pulled-right',
-                actions.store.button.class, { 'is-loading': state.loading }
-            ]"
-            :disabled="actions.store.forbidden || errors.any()"
-            @click="submit"
-            v-if="actions.store && !state.data.autosave">
-            <span class="is-hidden-mobile">
-                {{ i18n(actions.store.button.label) }}
-            </span>
-            <span class="icon">
-                <fa :icon="actions.store.button.icon"/>
-            </span>
-            <span class="is-hidden"/>
-        </button>
-        <button :class="[
-                'button is-pulled-right',
-                actions.update.button.class, { 'is-loading': state.loading }
-            ]"
-            :disabled="actions.update.forbidden || errors.any()"
-            @click="submit"
-            v-if="actions.update && !state.data.autosave">
-            <span class="is-hidden-mobile">
-                {{ i18n(actions.update.button.label) }}
-            </span>
-            <span class="icon">
-                <fa :icon="actions.update.button.icon"/>
-            </span>
-            <span class="is-hidden"/>
-        </button>
-        <div class="is-clearfix"/>
+    <div class="actions level is-mobile">
+        <div class="level-left">
+            <action tag="a"
+                :button="actions.back.button"
+                @click="$router.go(-1)"
+                v-if="actions.back"/>
+            <action tag="a"
+                :button="actions.destroy.button"
+                @click="confirmation = true"
+                v-if="actions.destroy && !actions.destroy.forbidden"/>
+            <action tag="a"
+                :button="actions.show.button"
+                @click="show()"
+                v-if="actions.show && !actions.show.forbidden"/>
+            <action tag="a"
+                :button="actions.create.button"
+                @click="create()"
+                v-if="actions.create && !actions.create.forbidden"/>
+            <slot name="actions"/>
+        </div>
+        <div class="level-right">
+            <div class="level-item"
+                v-if="errors.any()">
+                <a class="button is-small is-bold is-danger"
+                    @click="errors.empty()">
+                    <span>
+                        {{ i18n('errors') }}
+                    </span>
+                    <span class="icon is-small">
+                        <fa icon="times"/>
+                    </span>
+                </a>
+            </div>
+            <div class="level-item"
+                v-else-if="dirty()">
+                <a class="button is-small is-bold is-warning"
+                    @click="undo()">
+                    <span>
+                        {{ i18n('changes') }}
+                    </span>
+                    <span class="icon is-small">
+                        <fa icon="undo"/>
+                    </span>
+                </a>
+            </div>
+            <action tag="button"
+                :button="actions.store.button"
+                :disabled="errors.any()"
+                :loading="state.loading"
+                @click="submit()"
+                v-if="actions.store && !actions.store.forbidden && !state.data.autosave"/>
+            <action tag="button"
+                :button="actions.update.button"
+                :disabled="errors.any()"
+                :loading="state.loading"
+                @click="submit()"
+                v-else-if="actions.update && !actions.update.forbidden && !state.data.autosave"/>
+        </div>
         <confirmation :show="confirmation"
             :message="actions.destroy.button.message"
             @close="confirmation = false"
@@ -90,18 +68,19 @@
 <script>
 import { library } from '@fortawesome/fontawesome-svg-core';
 import {
-    faTrashAlt, faEye, faPlus, faCheck, faArrowLeft,
+    faTrashAlt, faEye, faPlus, faCheck, faArrowLeft, faTimes, faUndo,
 } from '@fortawesome/free-solid-svg-icons';
+import Action from './Action.vue';
 import Confirmation from './Confirmation.vue';
 
-library.add(faTrashAlt, faEye, faPlus, faCheck, faArrowLeft);
+library.add(faTrashAlt, faEye, faPlus, faCheck, faArrowLeft, faTimes, faUndo);
 
 export default {
     name: 'FormActions',
 
-    components: { Confirmation },
+    components: { Action, Confirmation },
 
-    inject: ['state', 'errors', 'i18n', 'submit', 'show', 'create', 'destroy'],
+    inject: ['state', 'dirty', 'errors', 'undo', 'i18n', 'submit', 'show', 'create', 'destroy'],
 
     data: () => ({
         confirmation: false,

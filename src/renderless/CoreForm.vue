@@ -41,23 +41,24 @@ export default {
             loading: false,
             data: null,
         },
+        original: null,
     }),
 
     computed: {
         formData() {
-            return this.flatten
+            return this.state.data && this.flatten
                 .reduce((object, field) => {
                     object[field.name] = field.value;
                     return object;
-                }, { _params: this.params });
+                }, {});
         },
         flatten() {
-            return this.state.data.sections
+            return this.state.data && this.state.data.sections
                 .reduce((fields, section) => fields
                     .concat(section.fields), []);
         },
         submitPath() {
-            return this.state.data.method === 'post'
+            return this.state.data && this.state.data.method === 'post'
                 ? this.state.data.actions.store.path
                 : this.state.data.actions.update.path;
         },
@@ -69,6 +70,8 @@ export default {
             create: this.create,
             customFields: this.customFields,
             customSections: this.customSections,
+            dirty: this.dirty,
+            undo: this.undo,
             destroy: this.destroy,
             errors: this.errors,
             errorCount: this.errorCount,
@@ -111,6 +114,7 @@ export default {
             axios.get(this.path, { params: this.params })
                 .then(({ data }) => {
                     this.state.data = data.form;
+                    this.setOriginal();
                     this.state.loading = false;
                     this.$emit('ready');
                     this.$emit('loaded', data);
@@ -140,34 +144,38 @@ export default {
         submit() {
             this.state.loading = true;
 
-            axios[this.state.data.method](this.submitPath, this.formData)
-                .then(({ data }) => {
-                    this.state.loading = false;
+            axios[this.state.data.method](
+                this.submitPath, { ...this.formData, _params: this.params },
+            ).then(({ data }) => {
+                this.state.loading = false;
 
-                    if (data.message) {
-                        this.$toastr.success(data.message);
-                    }
+                if (data.message) {
+                    this.$toastr.success(data.message);
+                }
 
-                    this.$emit('submit', data);
+                this.$emit('submit', data);
 
-                    if (data.redirect) {
-                        this.$router.push({
-                            name: data.redirect,
-                            params: { ...data.param, ...this.state.data.routeParams },
-                        });
-                    }
-                }).catch((error) => {
-                    const { status, data } = error.response;
-                    this.state.loading = false;
+                this.setOriginal();
 
-                    if (status === 422) {
-                        this.errors.set(data.errors);
-                        this.$nextTick(this.focusError);
-                        return;
-                    }
+                if (data.redirect) {
+                    this.$router.push({
+                        name: data.redirect,
+                        params: { ...data.param, ...this.state.data.routeParams },
+                    });
+                }
+            }).catch((error) => {
+                this.$emit('error', error);
+                const { status, data } = error.response;
+                this.state.loading = false;
 
-                    this.errorHandler(error);
-                });
+                if (status === 422) {
+                    this.errors.set(data.errors);
+                    this.$nextTick(this.focusError);
+                    return;
+                }
+
+                this.errorHandler(error);
+            });
         },
         destroy() {
             this.modal = false;
@@ -248,7 +256,7 @@ export default {
         },
         focusError() {
             this.$el.querySelector('.help.is-danger')
-                .scrollIntoView({ behavior: 'smooth' });
+                .scrollIntoView({ behavior: 'smooth', block: 'center' });
         },
         fieldBindings(field) {
             return {
@@ -284,6 +292,19 @@ export default {
             default:
                 throw new Error(`Misconfigured field "${this.field.name}"`);
             }
+        },
+        fill(data) {
+            Object.keys(data).forEach(key => this.field(key).value = data[key]);
+        },
+        setOriginal() {
+            this.original = JSON.stringify(this.formData);
+        },
+        undo() {
+            this.fill(JSON.parse(this.original));
+        },
+        dirty() {
+            return this.original
+                && JSON.stringify(this.formData) !== this.original;
         },
     },
 
