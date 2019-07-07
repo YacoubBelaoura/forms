@@ -4,13 +4,14 @@
             :class="['button', { 'is-loading': loading }, button.class]"
             :disabled="disabled"
             @click="$emit('click')">
-            <span class="is-hidden-mobile">
+            <!-- <span class="is-hidden-mobile"> -->
+            <span class="is-hidden-mobile hidden sm:block">
                 {{ i18n(button.label) }}
             </span>
             <span class="icon">
                 <fa :icon="button.icon"/>
             </span>
-            <span class="is-hidden"/>
+            <span class="is-hidden hidden"/>
         </component>
     </div>
 </template>

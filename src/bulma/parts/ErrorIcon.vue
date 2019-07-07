@@ -1,5 +1,7 @@
 <template>
-    <span class="icon is-small is-right has-text-danger">
+    <!-- <span class="icon is-small is-right has-text-danger"> -->
+    <span class="icon is-small is-right has-text-danger
+     text-red-400">
         <fa icon="exclamation-triangle"/>
     </span>
 </template>

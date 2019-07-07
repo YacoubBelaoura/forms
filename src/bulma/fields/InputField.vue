@@ -14,7 +14,8 @@
             v-on="$listeners"
             @input="errors.clear(field.name); $emit('changed')"
             v-else>
-        <error-icon v-if="errors.has(field.name)"/>
+        <!-- <error-icon v-if="errors.has(field.name)"/> TODO: change back when done ! -->
+        <error-icon v-if="!errors.has(field.name)"/>
     </div>
 </template>
 

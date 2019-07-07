@@ -13,7 +13,8 @@
 </template>
 
 <script>
-import { VueSelect } from '@enso-ui/select/bulma';
+// import { VueSelect } from '@enso-ui/select/bulma';TODO: restor after DONE
+import { VueSelect } from '/home/ovo/Documents/work-dev/Enso-3/resources/js/packages/tailwindcss-select/bulma';
 
 export default {
     name: 'SelectField',
